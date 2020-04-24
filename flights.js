@@ -7,26 +7,31 @@ var canvas;
 var width;
 var height;
 var ctx;
+var ctx1;
 var foreground;
 var arrFlights=[] ;
 var nbSteps =100;
-var i=0;
+
+var j=0;
 
 $(document).ready(function(){
 canvas = document.getElementById("myCanvas");
 var image;
 width = canvas.width;
 height = canvas.height;
-var ctx = canvas.getContext("2d");
+ctx = canvas.getContext("2d");
 startDraw();
+    
 $("#myCanvas").click(function(){
-    console.log("test");
      var flight1={"departure":"Ottawa","departureX":"685","departureY":"459","departureTime":"12","arrival":"Regina","arrivalX":"145","arrivalY":"265","duration":"6"};
+   //  var flight2={"departure":"Ottawa","departureX":"685","departureY":"459","departureTime":"12","arrival":"Regina","arrivalX":"245","arrivalY":"265","duration":"6"};
 foreground = new Image();
     
-foreground.src = "plane.jpg";
+foreground.src = "img/plane.jpg";
         var c = new flight(foreground,Number(flight1.departureX),Number(flight1.departureY),flight1.arrivalX,flight1.arrivalY,flight.departure);
-    setInterval(function() { UpdateFlight(c) }, 75); 
+     //   var c2 = new flight(foreground,Number(flight2.departureX),Number(flight2.departureY),flight2.arrivalX,flight2.arrivalY,flight2.departure);
+        setInterval(function() { UpdateFlight(c) }, 75); 
+      //  setInterval(function() { UpdateFlight(c2) }, 75); 
 
 
 });
@@ -35,15 +40,15 @@ foreground.src = "plane.jpg";
 });
 
 function UpdateFlight(flight){
-    if(i==0 || flight.currentStep>=1){
+    if(flight.counter==1||flight.nbStepsLeft>=1){
     arrFlights.push(flight);
     flight.drawItself(ctx);
-        console.log("Push:"+Number(flight.currentStep)+":"+Number(arrFlights.length));
+        console.log("Push:"+Number(flight.nbStepsLeft)+":"+Number(arrFlights.length));
     }
     else{
         if(arrFlights.length>=1){
        arrFlights.pop();  
-            console.log("Pop:"+Number(flight.currentStep)+":"+Number(arrFlights.length));
+            console.log("Pop:"+Number(flight.nbStepsLeft)+":"+Number(arrFlights.length));
         }
     }
      
@@ -56,47 +61,41 @@ function flight(image,departureX,departureY,arrivalX,arrivalY,origin){
     this.destinationY=arrivalY;
     this.currentX;
     this.currentY;
-    this.currentStep=nbSteps;
+    this.currentStep;
+    this.nbStepsLeft=nbSteps;
     this.image=image;
     this.height=40;
     this.width=40;
-this.drawItself=function(ctx){
-var a = this.destinationX - this.destinationY;
-var b = this.originX - this.originY;
-
-var c = Math.sqrt( a*a + b*b );
-console.log("distance:"+c);
-var steps=c/nbSteps;
-console.log("Steps:"+Math.round(steps));
+    this.counter=1;
+    this.drawItself=function(ctx){
+            var distanceX = this.destinationX - this.destinationY;
+            var distanceY = this.originX - this.originY;
+            var totalDistance = Math.sqrt( distanceX*distanceY + distanceY*distanceY );
+            var steps=totalDistance/nbSteps;
             ctx.beginPath();
-    
-            if(this.originY>this.destinationY){
-                this.currentX=this.originX-(i*Math.round(steps));
-                this.currentY=this.originY-i;
-                this.currentStep=this.currentStep-1;
-                console.log("i:"+i);
+            if(this.originY>this.destinationY && this.originX>this.destinationX){
+                this.currentX=this.originX-(this.counter*Math.round(steps));
+                this.currentY=this.originY-this.counter;
                 console.log("CurrentX:"+this.currentX);
                 console.log("CurrentY:"+this.currentY);
-                console.log("CurrentStep:"+this.currentStep);
-                console.log(Number(this.originX-(i*Math.round(steps)))+":"+Number(this.originY-i));
+                console.log("nbStepsLeft:"+this.nbStepsLeft);
+                console.log(Number(this.originX-(this.counter*Math.round(steps)))+":"+Number(this.originY-this.counter));
                 ctx.drawImage(image, this.currentX, this.currentY,this.width, this.height);
-                i=i+2;
-         
-            }
+                //To remove the previous image   
+                if(this.nbStepsLeft!=1){
+                        console.log("Old:"+Number(this.currentX-(j*Math.round(steps)))+":"+Number(this.currentY-j));
+                        startDraw(); 
+                    }    
+                this.nbStepsLeft=this.nbStepsLeft-1;
+                this.counter=this.counter+2;
+               }
 
-};
+    };
 }
-    function drawLines(x1,y1,x2,y2){
-ctx.beginPath();
-ctx.moveTo(x1,y1);
-ctx.lineTo(x2, y2);
-       // ctx.stroke();
-    }
+    
 function startDraw(){
-    canvas = document.getElementById("myCanvas");
-ctx = canvas.getContext("2d");
 var background = new Image();
-background.src = "Canada-1280-1107.png";
+background.src = "img/Canada-1280-1107.png";
 background.onload = function(){
 ctx.drawImage(background, 0, 0,width,height);
 };
